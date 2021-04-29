@@ -1,0 +1,84 @@
+version: '3.8'
+services:
+  mysql:
+    container_name: mysql
+ #   volumes:
+ #    - ./docker/sql:/docker-entrypoint-initdb.d
+    image: sajethoffice/stocks-mysql:0.0.1
+    restart: always
+#    environment:
+#      MYSQL_DATABASE: stocks
+#      MYSQL_ROOT_PASSWORD: password
+#      ACCEPT_EULA: Y
+    ports:
+      - 3306:3306
+  
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: cache
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27017-27019:27017-27019
+      
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - 6379:6379
+  
+
+  stocks-services:
+    container_name: stocks-services
+    volumes:
+     - ./docker/services:/data
+    image: sajethoffice/stocks-services:0.0.1
+    environment:
+     database.url: mysql
+     redis.url: redis
+     mongo.url: mongo
+    restart: always
+    ports:
+     - 6060:6060
+     - 6063:6063
+    depends_on:
+     - mysql
+     - mongo
+     - redis
+
+  stocks-batch:
+    container_name: stocks-batch
+    image: sajethoffice/stocks-batch:0.0.1
+    environment:
+     redis.url: redis
+     database.url: mysql
+     mongo.url: mongo
+    restart: always
+    ports:
+     - 9090:9090
+     - 9083:9083
+    depends_on:
+     - stocks-services
+
+  # business-central-workbench:
+  #   container_name: business-central-workbench
+  #   restart: always
+  #   image: jboss/business-central-workbench:latest
+  #   # volumes:
+  #   #   - ./docker/drools:/opt/jboss/wildfly/standalone/configuration
+  #   # enviroment:
+  #   #    JAVA_HOME: "/Users/sajeth/Library/Java/JavaVirtualMachines/openjdk-15/Contents/Home"
+  #   ports:
+  #    - 8080:8080
+  #    - 8001:8001
+  #   depends_on:
+  #    - stocks-services
+
+
+
+  
