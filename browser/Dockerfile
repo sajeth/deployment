@@ -1,0 +1,1 @@
+FROM selenium/standalone-chrome:114.0
