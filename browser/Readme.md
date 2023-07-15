@@ -5,21 +5,18 @@
 
 
 
-sudo yum update -y
+sudo yum install -y docker
 
-sudo amazon-linux-extras install docker
-
-sudo service docker start
 
 sudo systemctl start docker
 
 sudo service docker status
 
-sudo groupadd docker
+--!sudo groupadd docker
 
 sudo usermod -a -G docker ec2-user
 
-newgrp docker
+--!newgrp docker
 
 docker pull public.ecr.aws/g9t4u5w2/browser-service:114.0
 
